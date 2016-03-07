@@ -1,0 +1,803 @@
+/* CS2150Coursework.java
+ * Copyright c George King, username: kingg2
+ *
+ * Scene Graph:
+ *  Scene origin
+ *  |
+ *
+ *  TODO: Provide a scene graph for your submission
+ */
+package coursework.kingg2;
+
+import org.lwjgl.opengl.GL11;
+import org.lwjgl.util.glu.Cylinder;
+import org.lwjgl.util.glu.GLU;
+
+import java.util.Random;
+import java.util.concurrent.TimeUnit;
+
+import org.lwjgl.input.Keyboard;
+
+import org.newdawn.slick.opengl.Texture;
+import GraphicsLab.*;
+
+/**
+ * Hello The Doctor, the great exterminator!
+ *
+ * <p>Controls:
+ * <ul>
+ * <li>Press the escape key to exit the application.
+ * <li>Hold the x, y and z keys to view the scene along the x, y and z axis, respectively
+ * <li>While viewing the scene along the x, y or z axis, use the up and down cursor keys
+ *      to increase or decrease the viewpoint's distance from the scene origin
+ * </ul>
+ * TODO: Add any additional controls for your sample to the list above
+ *
+ */
+public class CS2150Coursework extends GraphicsLab
+{
+	
+	private Texture tardisSide;
+	private Texture tardisLeftDoor;
+	private Texture tardisRightDoor;
+	private Texture tardisTopText;
+	private Texture tardisWood;
+	private Texture backBackdrop;
+	private Texture bottomBackdrop;
+	private Texture vortex;
+	private Texture errolvortex;
+	private float tardisMoveX = 0f;
+	private float tardisSpinSpeed = 2f;
+	private float backgroundSpinSpeed = 1f;
+	private float tardisMoveZ = 0f;
+	private float tardisAlpha = 1f;
+	private float tardisFadeInAlpha = 1f;
+	private float tardisLightAlpha = 0.4f;
+	
+	private float testBackgroundAlpha = 0f;
+	
+	private float tardisFadeOutColour = 1.0f;
+	
+	private boolean tardisSpinBooTest = false;
+	
+	private boolean tardisMove = false;
+	private boolean tardisSpinBoo = false;
+	private boolean tardisDoors = false;
+	private boolean tardisFadeOut = false;
+	private boolean tardisFadeIn = false;
+	private boolean testBackgroundBlend = false;
+	private boolean lightFlash = false;
+	private boolean tardisLightIsWhite = false;
+	private boolean tardisLightIsGray = true;
+	
+	
+    //TODO: Feel free to change the window title and default animation scale here
+    public static void main(String args[])
+    {   new CS2150Coursework().run(WINDOWED,"TARDIS AWESOMENESS",0.01f);
+    }
+
+    protected void initScene() throws Exception
+    {//TODO: Initialise your resources here - might well call other methods you write.
+    	
+    	tardisSide = loadTexture("coursework/kingg2/textures/side.bmp");
+    	tardisLeftDoor = loadTexture("coursework/kingg2/textures/frontLeft.bmp");
+    	tardisRightDoor = loadTexture("coursework/kingg2/textures/frontRight.bmp");
+    	tardisTopText = loadTexture("coursework/kingg2/textures/top.bmp");
+    	tardisWood = loadTexture("coursework/kingg2/textures/wood.bmp");
+    	backBackdrop = loadTexture("coursework/kingg2/textures/astonBackdrop.bmp");
+    	bottomBackdrop = loadTexture("coursework/kingg2/textures/astonFloordrop.bmp");
+    	vortex = loadTexture("coursework/kingg2/textures/vortex.bmp");
+    	errolvortex = loadTexture("coursework/kingg2/textures/errolvortex.bmp");
+    	
+    	GL11.glEnable(GL11.GL_LIGHTING);
+    	GL11.glEnable(GL11.GL_NORMALIZE);
+    	float globalAmbient[] = {tardisLightAlpha, tardisLightAlpha, tardisLightAlpha, 1.0f};
+    	GL11.glLightModel(GL11.GL_LIGHT_MODEL_AMBIENT, FloatBuffer.wrap(globalAmbient));
+    	
+    	GL11.glNewList(1, GL11.GL_COMPILE);
+    	{	
+    		drawUnitPlane(); 
+    	}
+    	GL11.glEndList();
+    	GL11.glNewList(2, GL11.GL_COMPILE);
+    	{	
+    		drawUnitRectangle();
+    	}
+    	GL11.glEndList();
+    	GL11.glNewList(3, GL11.GL_COMPILE);
+    	{
+    		drawUnitTriangle();
+    	}
+    	GL11.glEndList();
+    }
+    protected void checkSceneInput()
+    {//TODO: Check for keyboard and mouse input here
+    	
+    	if(Keyboard.isKeyDown(Keyboard.KEY_R))
+        {   resetAnimations();
+        }
+    	else if(Keyboard.isKeyDown(Keyboard.KEY_S))
+    	{
+    	    tardisSpinBooTest = true;
+    		tardisFadeOut = true;
+    		lightFlash = true;
+    	}
+    	else if(Keyboard.isKeyDown(Keyboard.KEY_D))
+    	{
+    		tardisDoors = true;
+    	}
+    	else if(Keyboard.isKeyDown(Keyboard.KEY_SPACE))
+    	{
+    		tardisFadeOut = true;
+    		lightFlash = true;
+    	}
+    	
+    	else if(Keyboard.isKeyDown(Keyboard.KEY_L))
+    	{
+    		if (lightFlash == false){
+    			lightFlash = true;
+    			try {
+ 				   TimeUnit.MILLISECONDS.sleep(100);
+ 			    	} catch (InterruptedException e)
+ 			   {}
+    		}
+    		else {
+    			lightFlash = false;
+    			try {
+ 				   TimeUnit.MILLISECONDS.sleep(100);
+ 			    	} catch (InterruptedException e)
+ 			   {}
+    		}
+    	}
+    	else if(Keyboard.isKeyDown(Keyboard.KEY_E))
+    	{
+    		if (testBackgroundBlend == false) {
+    			testBackgroundBlend = true;
+    			try {
+    				   TimeUnit.MILLISECONDS.sleep(100);
+    			    	} catch (InterruptedException e)
+    			   {}
+    		}
+    		else {
+    			testBackgroundBlend = false;
+    			try {
+ 				   TimeUnit.MILLISECONDS.sleep(100);
+ 			    	} catch (InterruptedException e)
+ 			   {}
+    		}
+    	}
+    }
+    protected void updateScene()
+    {
+        //TODO: Update your scene variables here - remember to use the current animation scale value
+        //        (obtained via a call to getAnimationScale()) in your modifications so that your animations
+        //        can be made faster or slower depending on the machine you are working on
+    	if (tardisMove == true) {
+    		moveTardis();
+    		tardisMove = false;
+    	}
+    	if (tardisSpinBoo == true) {
+    	tardisSpinSpeed += (-4f * getAnimationScale());
+    	backgroundSpinSpeed += (1.7f * getAnimationScale());
+    	}
+    	
+    	tardisMaterialise();
+    	
+    	if (testBackgroundBlend == true) {
+    		testBackgroundAlpha += 0.05f * getAnimationScale();
+    	}
+    	
+    	if (lightFlash == true) {
+    		if (!(tardisLightAlpha >= 1) && tardisLightIsWhite == false) {
+    			tardisLightAlpha += 0.03 * getAnimationScale();
+    			tardisLightIsGray = false;
+    			if (tardisLightAlpha >=1) {
+    				tardisLightIsWhite = true;
+    			}
+    		}
+    		else { 
+    		if (tardisLightIsWhite == true) {
+    			tardisLightAlpha -= 0.03 * getAnimationScale();
+    			if (!(tardisLightAlpha >= 0.4)) {
+    				tardisLightIsWhite = false;
+    			}
+    		}
+    		}
+    	}
+    	else if (tardisLightIsGray != true && lightFlash == false) {
+    		tardisLightAlpha -= 0.03 * getAnimationScale();
+    		if (!(tardisLightAlpha >= 0.4)) {
+				tardisLightIsGray = true;
+			}
+    	}
+    }
+    protected void renderScene()
+    {//TODO: Render your scene here - remember that a scene graph will help you write this method! 
+     //      It will probably call a number of other methods you will write.
+    	
+    	if (tardisSpinBoo == false) {
+        	//draw floor
+        	GL11.glPushMatrix();
+        	{
+        		setUpTextures();
+        		GL11.glBindTexture(GL11.GL_TEXTURE_2D,bottomBackdrop.getTextureID());
+        		
+        		GL11.glTranslatef(0f, -1f, 3.1f);
+        		GL11.glRotated(-90, 1f, 0, 0);
+        		GL11.glScalef(11, 6, 1);
+        		GL11.glCallList(1);
+        		
+        		setDownTextures();
+        	}
+        	GL11.glPopMatrix();
+        	
+        	//draw background
+        	GL11.glPushMatrix();
+        	{
+        		setUpTextures();
+        		GL11.glBindTexture(GL11.GL_TEXTURE_2D,backBackdrop.getTextureID());
+        		
+        		GL11.glTranslatef(0f, 3.7f, -20f);
+        		GL11.glScalef(31, 12, 1);
+        		GL11.glCallList(1);
+        		
+        		setDownTextures();
+        	}
+        	GL11.glPopMatrix();
+        	}
+        	else if (tardisSpinBoo == true) {
+        		GL11.glPushMatrix();
+            	{
+            		setUpTextures();
+            		GL11.glBindTexture(GL11.GL_TEXTURE_2D,vortex.getTextureID());
+            		
+            		backgroundSpin();
+            		
+            		GL11.glTranslatef(0f, 0f, -14f);
+            		GL11.glScalef(38, 19, 1);
+            		GL11.glCallList(1);
+            		
+            		setDownTextures();
+            	}
+            	GL11.glPopMatrix();
+            	if (testBackgroundBlend == true) {
+            	GL11.glPushMatrix();
+            	{
+            		setUpTextures();
+            		setUpBackgroundBlending();
+            		GL11.glBindTexture(GL11.GL_TEXTURE_2D,errolvortex.getTextureID());
+            		
+            		setUpBackgroundBlending();
+            		
+            		GL11.glTranslatef(0f, 0f, -13f);
+            		GL11.glScalef(24, 12, 1);
+            		GL11.glCallList(1);
+            		setDownTextures();
+            	}
+            	GL11.glPopMatrix();
+            	}
+            	
+            	
+        	}
+    	
+    	
+    	//draw BACK of TARDIS
+    	GL11.glPushMatrix();
+    	{
+    		setUpTextures();
+    		setUpBlending();
+    		fadeInBlending();
+    		GL11.glBindTexture(GL11.GL_TEXTURE_2D,tardisSide.getTextureID());
+    		
+    		tardisSpin();
+    		
+    		GL11.glTranslatef(tardisMoveX,0f,(tardisMoveZ+-0.5f));
+    		GL11.glRotatef(-180.0f, 0.0f, 1.0f, 0.0f);
+    		GL11.glCallList(1);
+    		setDownTextures();
+    	}
+    	GL11.glPopMatrix();
+    	
+    	//draw LEFT SIDE of TARDIS
+        GL11.glPushMatrix();
+    	{
+    		setUpTextures();
+    		setUpBlending();
+    		fadeInBlending();
+    		GL11.glBindTexture(GL11.GL_TEXTURE_2D,tardisSide.getTextureID());
+    		
+    		tardisSpin();
+    		
+    		GL11.glTranslatef((tardisMoveX+-0.5f),0f,tardisMoveZ);
+    		GL11.glRotatef(-90.0f, 0.0f, 1.0f, 0.0f);
+    		GL11.glCallList(1);
+    		setDownTextures();
+    	}
+    	GL11.glPopMatrix(); 
+    	
+    	//draw RIGHT SIDE of TARDIS
+    	GL11.glPushMatrix();
+    	{
+    		setUpTextures();
+    		setUpBlending();
+    		fadeInBlending();
+            GL11.glBindTexture(GL11.GL_TEXTURE_2D,tardisSide.getTextureID());
+            
+            tardisSpin();
+            
+    		//move side to right position
+    		GL11.glTranslatef((tardisMoveX+0.5f),0f,tardisMoveZ);
+    		GL11.glRotatef(90.0f, 0.0f, 1.0f, 0.0f);
+    		GL11.glCallList(1);
+    		//disable textures
+    		setDownTextures();
+    	}
+    	GL11.glPopMatrix(); 
+    	
+    	//draw LEFT DOOR of TARDIS
+    	GL11.glPushMatrix();
+    	{
+    		setUpTextures();
+    		setUpBlending();
+    		fadeInBlending();
+            GL11.glBindTexture(GL11.GL_TEXTURE_2D,tardisLeftDoor.getTextureID());
+            
+            tardisSpin();
+    		
+            GL11.glTranslatef((tardisMoveX+-0.25f),0f,(tardisMoveZ+0.5f));
+    		GL11.glScalef(0.5f, 1.0f, 1.0f);
+    		GL11.glCallList(1);
+    		
+    		setDownTextures();
+    	}
+    	GL11.glPopMatrix(); 
+    	
+    	//draw RIGHT DOOR of TARDIS
+    	GL11.glPushMatrix();
+    	{
+    		setUpTextures();
+    		setUpBlending();
+    		fadeInBlending();
+            GL11.glBindTexture(GL11.GL_TEXTURE_2D,tardisRightDoor.getTextureID());
+            
+            tardisSpin();
+    		
+            GL11.glTranslatef((tardisMoveX+0.25f),0f,(tardisMoveZ+0.5f));
+    		GL11.glScalef(0.5f, 1.0f, 1.0f);
+    		GL11.glCallList(1);
+    		
+    		setDownTextures();
+    	}
+    	GL11.glPopMatrix();
+    	
+    	// Draw BOTTOM of TARDIS
+    	GL11.glPushMatrix(); 
+    	{
+    		setUpTextures();
+    		
+    		setUpBlending();
+    		
+    		fadeInBlending();
+    		
+    		GL11.glBindTexture(GL11.GL_TEXTURE_2D,tardisWood.getTextureID());
+    		
+    		tardisSpin();
+    		
+    		GL11.glTranslatef(tardisMoveX, -0.8f, tardisMoveZ);
+    		GL11.glScalef(1.1f, 0.1f, 1.1f);
+        	GL11.glCallList(2);
+        	
+        	setDownTextures();
+        	
+    	}
+    	GL11.glPopMatrix();
+    	
+    	//Draw OUTER TOP of TARDIS
+    	GL11.glPushMatrix(); 
+    	{
+    		setUpTextures();
+    		setUpBlending();
+    		fadeInBlending();
+    		GL11.glBindTexture(GL11.GL_TEXTURE_2D,tardisTopText.getTextureID());
+    		
+    		tardisSpin();
+    		
+    		GL11.glTranslatef(tardisMoveX, 0.8f, tardisMoveZ);
+    		GL11.glScalef(1.05f, 0.1f, 1.05f);
+        	GL11.glCallList(2);
+        	
+        	setDownTextures();
+    	}
+    	GL11.glPopMatrix();
+    	
+    	//Draw INNER TOP of TARDIS
+    	GL11.glPushMatrix(); 
+    	{
+    		setUpTextures();
+    		setUpBlending();
+    		fadeInBlending();
+    		GL11.glBindTexture(GL11.GL_TEXTURE_2D,tardisWood.getTextureID());
+    		
+    		tardisSpin();
+    		
+    		GL11.glTranslatef(tardisMoveX, 0.87f, tardisMoveZ);
+    		GL11.glScalef(0.95f, 0.05f, 0.95f);
+        	GL11.glCallList(2);
+        	
+        	setDownTextures();
+    	}
+    	GL11.glPopMatrix();
+    	
+    	//DRAW TRIANGLE OFF TARDIS
+    	GL11.glPushMatrix();
+    	{
+    		setUpTextures();
+    		setUpBlending();
+    		fadeInBlending();
+    		GL11.glBindTexture(GL11.GL_TEXTURE_2D,tardisWood.getTextureID());
+    		
+    		tardisSpin();
+    		
+    		GL11.glTranslatef(tardisMoveX, 0.95f, tardisMoveZ);
+    		GL11.glScalef(0.95f, 0.6f, 0.95f);
+    		GL11.glCallList(3);
+    		
+    		setDownTextures();
+    		GL11.glDisable(GL11.GL_BLEND);
+    	}
+    	GL11.glPopMatrix();
+    	
+    	//DRAW LIGHT SHAPE
+    	GL11.glPushMatrix();
+    	{
+    		tardisSpin();
+    		
+    		
+    		float tardisLightEmission[] = {tardisLightAlpha, tardisLightAlpha, tardisLightAlpha, 1.0f};
+    		GL11.glMaterial(GL11.GL_FRONT, GL11.GL_EMISSION, FloatBuffer.wrap(tardisLightEmission));
+    		
+    		
+    		GL11.glTranslatef(tardisMoveX, 1.12f, tardisMoveZ);
+    		GL11.glRotated(90f, 1, 0, 0);
+    		Cylinder c = new Cylinder();
+    		c.setOrientation(GLU.GLU_OUTSIDE);
+    		c.draw(0.05f, 0.05f, 0.4f, 50, 10);
+    		
+    		float defaultEmission[] = {0.0f, 0.0f, 0.0f, 0.0f};
+    		GL11.glMaterial(GL11.GL_FRONT, GL11.GL_EMISSION, FloatBuffer.wrap(defaultEmission));
+    		
+    	}
+    	GL11.glPopMatrix();
+    	
+    	//DRAW TRIANGLE ON TOP
+    	GL11.glPushMatrix();
+    	{
+    		setUpTextures();
+    		setUpBlending();
+    		fadeInBlending();
+    		GL11.glBindTexture(GL11.GL_TEXTURE_2D,tardisWood.getTextureID());
+    		
+    		tardisSpin();
+    		
+    		GL11.glTranslatef(tardisMoveX, 1.135f, tardisMoveZ);
+    		GL11.glScalef(0.15f, 0.4f, 0.15f);
+    		GL11.glCallList(3);
+    		
+    		setDownTextures();
+    	}
+    	GL11.glPopMatrix();
+
+    	
+    	// DRAW LIGHT
+    	//float ambient[] = { 1f, 1f, 1f, 0f };
+    	//float position[] = { tardisMoveX, 2f, tardisMoveZ, 1f };
+    	//GL11.glLight(GL11.GL_LIGHT0, GL11.GL_AMBIENT, FloatBuffer.wrap(ambient));
+    	//GL11.glLight(GL11.GL_LIGHT0, GL11.GL_POSITION, FloatBuffer.wrap(position));
+    	//GL11.glEnable(GL11.GL_LIGHT0); 
+    	
+    	
+    	
+    }
+    protected void setSceneCamera()
+    {
+        // call the default behaviour defined in GraphicsLab. This will set a default perspective projection
+        // and default camera settings ready for some custom camera positioning below...  
+        super.setSceneCamera();
+
+        //TODO: If it is appropriate for your scene, modify the camera's position and orientation here
+        //        using a call to GL11.gluLookAt(...)
+        if (tardisSpinBoo == false) {
+        GLU.gluLookAt(0, 1.5f, 8, 0, 1.5f, 0, 0, 1, 0);
+        }
+        else if (tardisSpinBoo == true) {
+        GLU.gluLookAt(0, 0f, 8, 0, 0f, 0, 0, 1, 0);
+        }
+   }
+
+    protected void cleanupScene()
+    {//TODO: Clean up your resources here
+    }
+    
+    private void drawUnitPlane() {
+    	//vertices for creating a TARDIS side-shaped plane
+    	Vertex v1 = new Vertex(-0.5f, -0.8f,  0f);
+        Vertex v2 = new Vertex(-0.5f,  0.8f,  0f);
+        Vertex v3 = new Vertex( 0.5f,  0.8f,  0f);
+        Vertex v4 = new Vertex( 0.5f, -0.8f,  0f);
+        
+        //draw near face
+        GL11.glBegin(GL11.GL_POLYGON);
+        {
+        	Normal n = new Normal(v4.toVector(), v3.toVector(), v2.toVector(), v1.toVector()); 
+        	n.submit();
+        	GL11.glTexCoord2f(1.0f,0.0f);
+        	v4.submit();
+        	GL11.glTexCoord2f(1.0f,1.0f);
+        	v3.submit();
+        	GL11.glTexCoord2f(0.0f,1.0f);
+        	v2.submit();
+        	GL11.glTexCoord2f(0.0f,0.0f);
+        	v1.submit();
+        }
+        GL11.glEnd(); 
+    }
+    // Lets build a rectangle. This will be for the base and top of the tardis
+    private void drawUnitRectangle() {
+    	Vertex v1 = new Vertex(-0.5f, -0.5f,  0.5f);
+        Vertex v2 = new Vertex(-0.5f,  0.5f,  0.5f);
+        Vertex v3 = new Vertex( 0.5f,  0.5f,  0.5f);
+        Vertex v4 = new Vertex( 0.5f, -0.5f,  0.5f);
+        Vertex v5 = new Vertex(-0.5f, -0.5f, -0.5f);
+        Vertex v6 = new Vertex(-0.5f,  0.5f, -0.5f);
+        Vertex v7 = new Vertex( 0.5f,  0.5f, -0.5f);
+        Vertex v8 = new Vertex( 0.5f, -0.5f, -0.5f);
+        
+      //draw near face
+        GL11.glBegin(GL11.GL_POLYGON);
+        {
+        	Normal n = new Normal(v4.toVector(), v3.toVector(), v2.toVector(), v1.toVector()); 
+        	n.submit();
+        	GL11.glTexCoord2f(1.0f,0.0f);
+        	v4.submit();
+        	GL11.glTexCoord2f(1.0f,1.0f);
+        	v3.submit();
+        	GL11.glTexCoord2f(0.0f,1.0f);
+        	v2.submit();
+        	GL11.glTexCoord2f(0.0f,0.0f);
+        	v1.submit();
+        }
+        GL11.glEnd(); 
+        //draw left face
+        GL11.glBegin(GL11.GL_POLYGON); 
+        {
+        	Normal n = new Normal(v5.toVector(), v1.toVector(), v2.toVector(), v6.toVector()); 
+        	n.submit();
+        	GL11.glTexCoord2f(0.0f,0.0f);
+        	v5.submit();
+        	GL11.glTexCoord2f(1.0f,0.0f);
+        	v1.submit();
+        	GL11.glTexCoord2f(1.0f,1.0f);
+        	v2.submit();
+        	GL11.glTexCoord2f(0.0f,1.0f);
+        	v6.submit();
+        }
+        GL11.glEnd();
+        //draw right face
+        GL11.glBegin(GL11.GL_POLYGON);
+        {
+        	Normal n = new Normal(v8.toVector(), v7.toVector(), v3.toVector(), v4.toVector()); 
+        	n.submit();
+        	GL11.glTexCoord2f(1.0f,0.0f);
+        	v8.submit();
+        	GL11.glTexCoord2f(1.0f,1.0f);
+        	v7.submit();
+        	GL11.glTexCoord2f(0.0f,1.0f);
+        	v3.submit();
+        	GL11.glTexCoord2f(0.0f,0.0f);
+        	v4.submit();
+        }
+        GL11.glEnd();
+        //draw top face
+        GL11.glBegin(GL11.GL_POLYGON);
+        {
+        	Normal n = new Normal(v7.toVector(), v6.toVector(), v2.toVector(), v3.toVector()); 
+        	n.submit();
+        	v7.submit();
+        	v6.submit();
+        	v2.submit();
+        	v3.submit();
+        }
+        GL11.glEnd();
+        //draw bottom face
+        GL11.glBegin(GL11.GL_POLYGON);
+        {
+        	Normal n = new Normal(v4.toVector(), v1.toVector(), v5.toVector(), v8.toVector()); 
+        	n.submit();
+        	v4.submit();
+        	v1.submit();
+        	v5.submit();
+        	v8.submit();
+        }
+        GL11.glEnd();
+        //draw far face
+        GL11.glBegin(GL11.GL_POLYGON);
+        {
+        	Normal n = new Normal(v8.toVector(), v5.toVector(), v6.toVector(), v7.toVector()); 
+        	n.submit();
+        	GL11.glTexCoord2f(0.0f,0.0f);
+        	v8.submit();
+        	GL11.glTexCoord2f(1.0f,0.0f);
+        	v5.submit();
+        	GL11.glTexCoord2f(1.0f,1.0f);
+        	v6.submit();
+        	GL11.glTexCoord2f(0.0f,1.0f);
+        	v7.submit();
+        }
+        GL11.glEnd(); 
+    }
+    
+    private void drawUnitTriangle() {
+    	// Vertexes
+    	Vertex v1 = new Vertex(0.5f, -0.1f,  0.5f);
+    	Vertex v2 = new Vertex(0f,  0.1f,  0f);
+    	Vertex v3 = new Vertex(-0.5f, -0.1f,  0.5f);
+    	Vertex v4 = new Vertex(0.5f, -0.1f,  -0.5f);
+    	Vertex v5 = new Vertex(-0.5f, -0.1f,  -0.5f);
+    	
+    	//draw front face
+    	GL11.glBegin(GL11.GL_TRIANGLES);
+    	{
+    		Normal n = new Normal(v1.toVector(), v2.toVector(), v3.toVector());
+    		n.submit();
+    		GL11.glTexCoord2f(1.0f,0.0f);
+    		v1.submit();
+    		GL11.glTexCoord2f(0.5f,0.5f);
+    		v2.submit();
+    		GL11.glTexCoord2f(0.0f,0.0f);
+    		v3.submit();
+    	}
+    	GL11.glEnd();
+    	
+    	//draw right face
+    	GL11.glBegin(GL11.GL_TRIANGLES);
+    	{
+    		Normal n = new Normal(v4.toVector(), v2.toVector(), v1.toVector());
+    		n.submit();
+    		GL11.glTexCoord2f(1.0f,0.0f);
+    		v4.submit();
+    		GL11.glTexCoord2f(0.5f,0.5f);
+    		v2.submit();
+    		GL11.glTexCoord2f(0.0f,0.0f);
+    		v1.submit();
+    	}
+    	GL11.glEnd();
+    	
+    	//draw back face
+    	GL11.glBegin(GL11.GL_TRIANGLES);
+    	{
+    		Normal n = new Normal(v4.toVector(), v5.toVector(), v2.toVector());
+    		n.submit();
+    		GL11.glTexCoord2f(1.0f,0.0f);
+    		v4.submit();
+    		GL11.glTexCoord2f(0.5f,0.5f);
+    		v5.submit();
+    		GL11.glTexCoord2f(0.0f,0.0f);
+    		v2.submit();
+    	}
+    	GL11.glEnd();
+    	
+    	//draw left face
+    	GL11.glBegin(GL11.GL_TRIANGLES);
+    	{
+    		Normal n = new Normal(v5.toVector(), v3.toVector(), v2.toVector());
+    		n.submit();
+    		GL11.glTexCoord2f(1.0f,0.0f);
+    		v5.submit();
+    		GL11.glTexCoord2f(0.5f,0.5f);
+    		v3.submit();
+    		GL11.glTexCoord2f(0.0f,0.0f);
+    		v2.submit();
+    	}
+    	GL11.glEnd();
+    }
+    
+    private void setUpTextures() {
+    	GL11.glPushAttrib(GL11.GL_LIGHTING_BIT);
+        GL11.glDisable(GL11.GL_LIGHTING);
+        Colour.WHITE.submit();
+        GL11.glEnable(GL11.GL_TEXTURE_2D);
+    }
+    
+    private void setDownTextures() {
+    	GL11.glDisable(GL11.GL_TEXTURE_2D);
+    	GL11.glDisable(GL11.GL_BLEND);
+		GL11.glPopAttrib();
+    }
+   private void moveTardis() {
+		   tardisMoveX = randInt(3, -3);
+    }
+    
+    private void resetAnimations() {
+    	tardisMoveX = 0f;
+    	tardisMoveZ = 0f;
+    	tardisSpinBoo = false;
+    	lightFlash = false;
+    }
+    
+    private static int randInt(int max, int min) {
+    	Random rand = new Random();
+    	int randomNum = rand.nextInt((max - min) + 1) + min;
+    	return randomNum;
+    }
+    
+    private void tardisSpin() {
+    	if (tardisSpinBoo == true) {
+    		tardisMoveX = 0;
+    		tardisMoveZ = 1.7f;
+    		GL11.glRotatef(-tardisSpinSpeed, 0.5f, -2.0f, 0.0f);
+    	}
+    }
+    
+    private void backgroundSpin() {
+    	if (tardisSpinBoo == true) {
+    		GL11.glRotatef(backgroundSpinSpeed, 0, 0, 1);
+    	}
+    }
+    
+    private void setUpBlending() {
+		if (tardisFadeOut == true) {
+		GL11.glEnable(GL11.GL_BLEND);
+		GL11.glBlendFunc(GL11.GL_ONE, GL11.GL_ONE_MINUS_SRC_ALPHA);
+		GL11.glColor4f(tardisFadeOutColour, tardisFadeOutColour, tardisFadeOutColour, tardisAlpha);
+		}
+    }
+    
+    private void fadeInBlending() {
+    	if (tardisFadeIn == true) {
+		GL11.glEnable(GL11.GL_BLEND);
+		GL11.glBlendFunc(GL11.GL_ONE, GL11.GL_SRC_ALPHA);
+		GL11.glColor4f(tardisFadeOutColour, tardisFadeOutColour, tardisFadeOutColour, tardisFadeInAlpha);
+		}
+    }
+    
+    private void setUpBackgroundBlending() {
+		if (testBackgroundBlend == true) {
+		GL11.glEnable(GL11.GL_BLEND);
+		GL11.glBlendFunc(GL11.GL_ONE, GL11.GL_ONE_MINUS_SRC_ALPHA);
+		GL11.glColor4f(1.0f, 1.0f, 1.0f, testBackgroundAlpha);
+		
+		}
+    }
+    int counter = 0;
+    public void tardisMaterialise() {
+    	if (tardisFadeOut == true) {
+    		tardisAlpha -= 0.05f * getAnimationScale();
+    		if (tardisAlpha <= 0f) {
+    			if (counter == 2) {
+    				tardisMove = true;
+    				if (tardisSpinBooTest == true)
+    					tardisSpinBoo = true;
+    			}
+    			tardisAlpha = 1f;
+    			tardisFadeIn = true;
+    			tardisFadeOut = false;
+    			counter++;
+    		}
+    	}
+    	
+    	if (tardisFadeIn == true) {
+    		tardisFadeInAlpha -= 0.05f * getAnimationScale();
+    		if (tardisFadeInAlpha <= 0) {
+    			tardisFadeIn = false;
+    			tardisFadeInAlpha = 1;
+    			if (counter != 3) {
+    				tardisFadeOut = true;
+    			}
+    			else {
+    				counter = 0;
+    				lightFlash = false;
+    			}
+    		}
+    	}
+    }
+}
