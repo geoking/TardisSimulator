@@ -116,7 +116,7 @@ public class CS2150Coursework extends GraphicsLab
 	/** For slower computers, change the animation scale "0.01f" higher to keep animations up to speed
 	 */
 	public static void main(String args[])
-	{   new CS2150Coursework().run(WINDOWED,"TARDIS SIMULATOR",0.01f);
+	{   new CS2150Coursework().run(WINDOWED,"TARDIS SIMULATOR",0.1f);
 	}
 	/** 
 	 * This method initialises all of the used textures, global lighting and the 3 objects used in my scenes
@@ -811,7 +811,7 @@ public class CS2150Coursework extends GraphicsLab
 		int randomNum = rand.nextInt((max - min) + 1) + min;
 		return randomNum;
 	}
-	// Rotates background around the z axis
+	// Rotates background around the X axis
 	private void backgroundSpin() {
 		if (tardisVortex == true) {
 			GL11.glRotatef(backgroundSpinSpeed, 0, 0, 1);

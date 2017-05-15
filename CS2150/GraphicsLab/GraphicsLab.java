@@ -218,8 +218,8 @@ public abstract class GraphicsLab
         // Note: In Linux, max colour depth is 24, not 32
         for(int i = 0; i < availableModes.length; i++)
         {
-            if(availableModes[i].getWidth() == 800
-                && availableModes[i].getHeight() == 600
+            if(availableModes[i].getWidth() == 1280
+                && availableModes[i].getHeight() == 960
                 && (availableModes[i].getBitsPerPixel() == 32 || availableModes[i].getBitsPerPixel() == 24))
             {
                 displayMode = availableModes[i];

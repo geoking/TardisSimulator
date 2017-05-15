@@ -2705,3 +2705,28 @@ java.lang.NullPointerException
 	at org.eclipse.equinox.launcher.Main.invokeFramework(Main.java:673)
 	at org.eclipse.equinox.launcher.Main.basicRun(Main.java:610)
 	at org.eclipse.equinox.launcher.Main.run(Main.java:1519)
+!SESSION 2017-05-15 18:06:26.256 -----------------------------------------------
+eclipse.buildId=4.6.3.M20170301-0400
+java.version=1.8.0_131
+java.vendor=Oracle Corporation
+BootLoader constants: OS=macosx, ARCH=x86_64, WS=cocoa, NL=en_GB
+Framework arguments:  -product org.eclipse.epp.package.java.product -keyring /Users/george/.eclipse_keyring
+Command-line arguments:  -os macosx -ws cocoa -arch x86_64 -product org.eclipse.epp.package.java.product -keyring /Users/george/.eclipse_keyring
+
+!ENTRY org.eclipse.core.net 1 0 2017-05-15 18:06:42.518
+!MESSAGE System property http.nonProxyHosts has been set to local|*.local|169.254/16|*.169.254/16 by an external source. This value will be overwritten using the values from the preferences
+
+!ENTRY org.eclipse.jdt.core 4 0 2017-05-15 18:06:45.116
+!MESSAGE Invalid ZIP archive: jar/jinput.jar [in LWJGL]
+
+!ENTRY org.eclipse.jdt.core 4 0 2017-05-15 18:06:45.121
+!MESSAGE Invalid ZIP archive: jar/lwjgl_util.jar [in LWJGL]
+
+!ENTRY org.eclipse.jdt.core 4 0 2017-05-15 18:06:45.122
+!MESSAGE Invalid ZIP archive: jar/lwjgl.jar [in LWJGL]
+
+!ENTRY org.eclipse.jdt.core 4 0 2017-05-15 18:06:45.122
+!MESSAGE Invalid ZIP archive: jar/slick-util.jar [in LWJGL]
+
+!ENTRY org.eclipse.jdt.launching 4 150 2017-05-15 18:07:18.526
+!MESSAGE The archive: /LWJGL/jar/jinput.jar which is referenced by the classpath, does not exist.
